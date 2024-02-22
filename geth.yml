@@ -1,0 +1,80 @@
+version: '3.9'
+
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+volumes:
+  linea_data: {}
+
+services:
+  init:
+    image: ethereum/client-go:${GETH_DOCKER_TAG}
+    entrypoint:
+      - geth
+      - --datadir=/var/lib/goethereum/${NETWORK}
+      - --verbosity=3
+      - init
+      - /genesis.json
+    volumes:
+      - ./geth/genesis-${NETWORK}.json:/genesis.json:ro
+      - linea_data:/var/lib/goethereum
+    <<: *logging
+
+  geth:
+    image: ethereum/client-go:${GETH_DOCKER_TAG}
+    pull_policy: always
+    restart: unless-stopped
+    stop_grace_period: 30s
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - NETWORK=${NETWORK:-}
+
+      - MAINNET_NETWORKID=${MAINNET_NETWORKID:-}
+      - MAINNET_BOOTNODES=${MAINNET_BOOTNODES:-}
+
+      - TESTNET_NETWORKID=${TESTNET_NETWORKID:-}
+      - TESTNET_BOOTNODES=${TESTNET_BOOTNODES:-}
+    entrypoint:
+      - docker-entrypoint.sh
+      - geth
+      - --datadir=/var/lib/goethereum/${NETWORK}
+      - --rpc.allow-unprotected-txs
+      - --txpool.accountqueue=50000
+      - --txpool.globalqueue=50000
+      - --txpool.globalslots=50000
+      - --txpool.pricelimit=1000000
+      - --txpool.pricebump=1
+      - --txpool.nolocals
+      - --http
+      - --http.addr=0.0.0.0
+      - --http.port=${RPC_PORT}
+      - --http.corsdomain=*
+      - --http.api=admin,web3,eth,txpool,net
+      - --http.vhosts=*
+      - --ws
+      - --ws.addr=0.0.0.0
+      - --ws.port=${WS_PORT}
+      - --ws.origins=*
+      - --ws.api=admin,web3,eth,txpool,net
+      - --syncmode=${SYNC_MODE:-snap}
+      - --metrics
+      - --metrics.expensive
+    ports:
+      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+    volumes:
+      - ./geth/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
+      - linea_data:/var/lib/goethereum
+    labels:
+      - metrics.scrape=true
+      - metrics.port=6060
+      - metrics.path=/debug/metrics/prometheus
+    <<: *logging
