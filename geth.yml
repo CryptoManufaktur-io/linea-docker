@@ -67,6 +67,7 @@ services:
       - --syncmode=${SYNC_MODE:-snap}
       - --metrics
       - --metrics.expensive
+      - --metrics.addr=0.0.0.0
     ports:
       - ${EL_P2P_PORT:-30303}:30303/tcp
       - ${EL_P2P_PORT:-30303}:30303/udp
