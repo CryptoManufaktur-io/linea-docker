@@ -68,8 +68,8 @@ services:
       - --metrics
       - --metrics.expensive
     ports:
-      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
-      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+      - ${EL_P2P_PORT:-30303}:30303/tcp
+      - ${EL_P2P_PORT:-30303}:30303/udp
     volumes:
       - ./geth/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
       - linea_data:/var/lib/goethereum
