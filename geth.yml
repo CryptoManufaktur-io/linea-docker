@@ -77,4 +77,23 @@ services:
       - metrics.scrape=true
       - metrics.port=6060
       - metrics.path=/debug/metrics/prometheus
+      - traefik.enable=true
+      - traefik.http.routers.${RPC_HOST:-linea}.service=${RPC_HOST:-linea}
+      - traefik.http.routers.${RPC_HOST:-linea}.entrypoints=websecure
+      - traefik.http.routers.${RPC_HOST:-linea}.rule=Host(`${RPC_HOST:-linea}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST:-linea}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${RPC_HOST:-linea}lb.service=${RPC_HOST:-linea}
+      - traefik.http.routers.${RPC_HOST:-linea}lb.entrypoints=websecure
+      - traefik.http.routers.${RPC_HOST:-linea}lb.rule=Host(`${RPC_LB:-linea-lb}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST:-linea}lb.tls.certresolver=letsencrypt
+      - traefik.http.services.${RPC_HOST:-linea}.loadbalancer.server.port=${RPC_PORT:-8545}
+      - traefik.http.routers.${WS_HOST:-lineaws}.service=${WS_HOST:-lineaws}
+      - traefik.http.routers.${WS_HOST:-lineaws}.entrypoints=websecure
+      - traefik.http.routers.${WS_HOST:-lineaws}.rule=Host(`${WS_HOST:-lineaws}.${DOMAIN}`)
+      - traefik.http.routers.${WS_HOST:-lineaws}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${WS_HOST:-lineaws}lb.service=${WS_HOST:-lineaws}
+      - traefik.http.routers.${WS_HOST:-lineaws}lb.entrypoints=websecure
+      - traefik.http.routers.${WS_HOST:-lineaws}lb.rule=Host(`${WS_LB:-lineaws-lb}.${DOMAIN}`)
+      - traefik.http.routers.${WS_HOST:-lineaws}lb.tls.certresolver=letsencrypt
+      - traefik.http.services.${WS_HOST:-lineaws}.loadbalancer.server.port=${WS_PORT:-8546}
     <<: *logging
