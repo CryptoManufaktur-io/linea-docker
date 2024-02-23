@@ -53,6 +53,8 @@ services:
       - --txpool.pricelimit=1000000
       - --txpool.pricebump=1
       - --txpool.nolocals
+      - --port
+      - ${EL_P2P_PORT:-30303}
       - --http
       - --http.addr=0.0.0.0
       - --http.port=${RPC_PORT}
@@ -69,8 +71,8 @@ services:
       - --metrics.expensive
       - --metrics.addr=0.0.0.0
     ports:
-      - ${EL_P2P_PORT:-30303}:30303/tcp
-      - ${EL_P2P_PORT:-30303}:30303/udp
+      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
+      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
     volumes:
       - ./geth/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
       - linea_data:/var/lib/goethereum
@@ -98,3 +100,6 @@ services:
       - traefik.http.routers.${WS_HOST:-lineaws}lb.tls.certresolver=letsencrypt
       - traefik.http.services.${WS_HOST:-lineaws}.loadbalancer.server.port=${WS_PORT:-8546}
     <<: *logging
+
+volumes:
+  linea-data:

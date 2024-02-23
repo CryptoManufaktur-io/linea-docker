@@ -430,7 +430,7 @@ envmigrate() {
 
 # Adjust these vars to your project
   ALL_VARS=( COMPOSE_FILE NETWORK SYNC_MODE GETH_DOCKER_TAG LOG_LEVEL DOMAIN \
-              RPC_HOST RPC_LB WS_HOST WS_LB RPC_PORT WS_PORT \
+              RPC_HOST RPC_LB WS_HOST WS_LB RPC_PORT WS_PORT EL_P2P_PORT \
               MAINNET_NETWORKID MAINNET_BOOTNODES TESTNET_NETWORKID TESTNET_BOOTNODES )
   OLD_VARS=( )
   NEW_VARS=( )
@@ -578,7 +578,7 @@ version() {
 # Client versions
 # Adjust for your clients and how to check their version
   case "${value}" in
-    *geth.yml* )
+    *linea.yml* )
       docompose exec geth geth version
       ;;
   esac
