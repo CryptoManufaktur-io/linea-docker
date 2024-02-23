@@ -99,4 +99,4 @@ services:
     <<: *logging
 
 volumes:
-  linea-data:
+  linea_data:
