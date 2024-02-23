@@ -8,9 +8,6 @@ x-logging: &logging
       max-file: "3"
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
-volumes:
-  linea_data: {}
-
 services:
   init:
     image: ethereum/client-go:${GETH_DOCKER_TAG}
