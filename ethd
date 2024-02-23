@@ -519,7 +519,7 @@ cmd() {
 
 
 terminate() {
-  if [ -z "$(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
+  if [ -z "$(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_.+")" ]; then
     echo "There are no data stores - Docker volumes - left to remove for this ${__app_name}."
     stop
     exit 0
@@ -536,7 +536,7 @@ terminate() {
   down
 # In this case I want the word splitting, so rm can remove all volumes
 # shellcheck disable=SC2046
-  dodocker volume rm $(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")
+  dodocker volume rm $(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_.+")
   echo
   echo "All containers stopped and all volumes deleted"
   echo
