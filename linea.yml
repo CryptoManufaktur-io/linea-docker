@@ -15,6 +15,9 @@ services:
       - --verbosity=3
       - init
       - /genesis.json
+      - --state.scheme
+      - path
+
     volumes:
       - ./geth/genesis-${NETWORK}.json:/genesis.json:ro
       - linea_data:/var/lib/goethereum
