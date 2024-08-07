@@ -13,10 +13,10 @@ services:
       - geth
       - --datadir=/var/lib/goethereum/${NETWORK}
       - --verbosity=3
-      - init
-      - /genesis.json
       - --state.scheme
       - path
+      - init
+      - /genesis.json
 
     volumes:
       - ./geth/genesis-${NETWORK}.json:/genesis.json:ro
