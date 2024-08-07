@@ -1,5 +1,3 @@
-version: '3.9'
-
 x-logging: &logging
   logging:
     driver: json-file
@@ -67,6 +65,7 @@ services:
       - --metrics
       - --metrics.expensive
       - --metrics.addr=0.0.0.0
+    command: ${EXTRAS:-}
     ports:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
