@@ -581,6 +581,9 @@ version() {
     *linea.yml* )
       docompose exec geth geth version
       ;;
+    *linea-besu.yml* )
+      docompose exec besu /opt/besu/bin/besu --version
+      ;;
   esac
 }
 
