@@ -23,7 +23,7 @@ services:
       - linea_data:/var/lib/goethereum
     <<: *logging
 
-  geth:
+  linea:
     image: ethereum/client-go:${GETH_DOCKER_TAG}
     pull_policy: always
     restart: unless-stopped

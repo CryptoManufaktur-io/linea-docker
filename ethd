@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 __project_name="Linea Docker"
 __app_name="Linea node"
-__sample_service="geth"
+__sample_service="linea"
 __docker_exe="docker"
 __compose_exe="docker compose"
 __compose_upgraded=0
@@ -579,10 +579,10 @@ version() {
 # Adjust for your clients and how to check their version
   case "${value}" in
     *linea.yml* )
-      docompose exec geth geth version
+      docompose exec linea geth version
       ;;
     *linea-besu.yml* )
-      docompose exec besu /opt/besu/bin/besu --version
+      docompose exec linea /opt/besu/bin/besu --version
       ;;
   esac
 }

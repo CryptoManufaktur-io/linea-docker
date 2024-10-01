@@ -15,11 +15,10 @@ services:
       - -c
       - "chown -R 1000:1000 /opt/besu/data"
     volumes:
-      - ./geth/genesis-${NETWORK}.json:/genesis.json:ro
       - linea_besu_data:/opt/besu/data
     <<: *logging
 
-  besu:
+  linea:
     image: consensys/linea-besu-package:${BESU_DOCKER_TAG:-latest}
     pull_policy: always
     restart: unless-stopped
