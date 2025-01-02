@@ -582,7 +582,7 @@ version() {
       docompose exec linea geth version
       ;;
     *linea-besu.yml* )
-      docompose exec linea /opt/besu/bin/besu --version
+      docompose exec linea /opt/besu/bin/besu --profile=advanced-mainnet --version
       ;;
   esac
 }
