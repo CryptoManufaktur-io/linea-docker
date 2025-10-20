@@ -4,8 +4,16 @@ Docker Compose for Linea node.
 
 ## NB
 
-Volume for linea-besu renamed from `linea_besu_data` to `linea-besu-data`, so make sure to move the data accordingly before starting the services
+Volume for linea-besu renamed from `linea_besu_data` to `linea-besu-data`, so make sure to move the data accordingly before starting the services.
 
+Steps:
+```bash
+1. git pull
+2. docker compose stop
+3. docker compose create ## to create all volumes needed
+```
+
+As root move the data in `/var/lib/docker/volumes/FOLDERNAME_linea_besu_data/_data` volume to `/var/lib/docker/volumes/FOLDERNAME_linea-besu-data/_data`. Use `./ethd space` to make sure the data is moved correctly before starting (Its moved correctly when the space contains besu data). Then just start as usual.
 ## NB END
 
 
