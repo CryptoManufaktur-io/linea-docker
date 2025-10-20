@@ -2,6 +2,13 @@
 
 Docker Compose for Linea node.
 
+## NB
+
+Volume for linea-besu renamed from `linea_besu_data` to `linea-besu-data`, so make sure to move the data accordingly before starting the services
+
+## NB END
+
+
 The `./linead` script can be used as a quick-start:
 
 `./linead install` brings in docker-ce, if you don't have Docker installed already.
