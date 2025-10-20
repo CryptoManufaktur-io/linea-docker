@@ -1,0 +1,52 @@
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-json
+      - id: check-yaml
+      - id: check-shebang-scripts-are-executable
+      - id: check-executables-have-shebangs
+      - id: detect-private-key
+      - id: check-ast
+      - id: debug-statements
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: mixed-line-ending
+      - id: check-case-conflict
+      - id: requirements-txt-fixer
+      - id: check-toml
+
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 3.0.0
+    hooks:
+      - id: shellcheck
+      - id: script-must-have-extension
+      - id: git-dirty
+      - id: git-check
+      - id: forbid-binary
+
+  # Spelling (nice quality-of-life)
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+
+  # Dockerfiles
+  # Disabled bcs macOS Docker might not be installed
+  # - repo: https://github.com/hadolint/hadolint
+  #   rev: v2.13.1
+  #   hooks:
+  #     - id: hadolint-docker
+
+  # YAML style (beyond syntax)
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.37.1
+    hooks:
+      - id: yamllint
+        args:
+          - -d
+          - >
+            {extends: default, rules: {line-length: {max: 120},document-start: disable,truthy: disable}}

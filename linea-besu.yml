@@ -26,38 +26,30 @@ services:
     depends_on:
       init:
         condition: service_completed_successfully
-    entrypoint:
-      - /opt/besu/bin/besu 
-      - --data-path=/opt/besu/data/
-      - --profile=advanced-mainnet
-      - --p2p-host=${PUBLIC_IP}
-      - --plugin-linea-l1-rpc-endpoint=${L1_RPC}
-      - --p2p-port=${EL_P2P_PORT}
-      - --rpc-http-enabled=true
-      - --rpc-http-api=ETH,NET,WEB3,TXPOOL,PLUGINS
-      - --rpc-http-cors-origins="*"
-      - --rpc-http-host=0.0.0.0
-      - --rpc-http-port=${RPC_PORT}
-      - --rpc-ws-enabled=true
-      - --rpc-ws-api=ETH,NET,WEB3,TXPOOL,PLUGINS
-      - --rpc-ws-port=${WS_PORT}
-      - --rpc-ws-host=0.0.0.0
-      - --metrics-enabled=true
-      - --metrics-port=6060
-      - --metrics-host=0.0.0.0
-      - --logging=${LOG_LEVEL}
-      - --rpc-tx-feecap=0
-    command: ${EXTRAS:-}
-    ports:
-      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/tcp
-      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}/udp
+    environment:
+      - JAVA_OPTS=-Xmx2g
+      - LOG4J_CONFIGURATION_FILE=/var/lib/besu/log4j.xml
+    command:
+      - --config-file=/var/lib/besu/linea-besu.config.toml
+      - --Xdns-enabled=true
+      - --Xdns-update-enabled=true
+      - --Xrpc-ipc-enabled=true
+      - --static-nodes-file=/var/lib/besu/static-nodes.json
     volumes:
-      - linea_besu_data:/opt/besu/data/
+      - ./besu/linea-besu.config.toml:/var/lib/besu/linea-besu.config.toml:ro
+      - ./besu/besu-genesis.json:/var/lib/besu/genesis.json:ro
+      - ./besu/log4j.xml:/var/lib/besu/log4j.xml
+      - ./execution-layer-static-nodes.json:/var/lib/besu/static-nodes.json:ro
+      - ./engine-jwt:/var/lib/besu/jwt:ro
+      - linea_besu_data:/opt/besu/data
+    ports:
+      - ${EL_P2P_PORT}:30303/tcp
+      - ${EL_P2P_PORT}:30303/udp
     labels:
       - metrics.scrape=true
       - metrics.port=6060
       - metrics.path=/debug/metrics/prometheus
-      - metrics.network=linea-mainnet
+      - metrics.network=linea-${NETWORK}
       - traefik.enable=true
       - traefik.http.routers.${RPC_HOST:-linea}.service=${RPC_HOST:-linea}
       - traefik.http.routers.${RPC_HOST:-linea}.entrypoints=websecure
@@ -67,7 +59,7 @@ services:
       - traefik.http.routers.${RPC_HOST:-linea}lb.entrypoints=websecure
       - traefik.http.routers.${RPC_HOST:-linea}lb.rule=Host(`${RPC_LB:-linea-lb}.${DOMAIN}`)
       - traefik.http.routers.${RPC_HOST:-linea}lb.tls.certresolver=letsencrypt
-      - traefik.http.services.${RPC_HOST:-linea}.loadbalancer.server.port=${RPC_PORT:-8545}
+      - traefik.http.services.${RPC_HOST:-linea}.loadbalancer.server.port=8545
       - traefik.http.routers.${WS_HOST:-lineaws}.service=${WS_HOST:-lineaws}
       - traefik.http.routers.${WS_HOST:-lineaws}.entrypoints=websecure
       - traefik.http.routers.${WS_HOST:-lineaws}.rule=Host(`${WS_HOST:-lineaws}.${DOMAIN}`)
@@ -76,7 +68,7 @@ services:
       - traefik.http.routers.${WS_HOST:-lineaws}lb.entrypoints=websecure
       - traefik.http.routers.${WS_HOST:-lineaws}lb.rule=Host(`${WS_LB:-lineaws-lb}.${DOMAIN}`)
       - traefik.http.routers.${WS_HOST:-lineaws}lb.tls.certresolver=letsencrypt
-      - traefik.http.services.${WS_HOST:-lineaws}.loadbalancer.server.port=${WS_PORT:-8546}
+      - traefik.http.services.${WS_HOST:-lineaws}.loadbalancer.server.port=8546
     <<: *logging
 
 volumes:
