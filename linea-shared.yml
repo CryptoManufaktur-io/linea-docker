@@ -1,6 +1,11 @@
-# To be used in conjunction with linea.yml
+# To be used in conjunction with linea-besu.yml and maru.yml
 services:
   linea:
     ports:
-      - ${RPC_PORT}:${RPC_PORT}/tcp
-      - ${WS_PORT}:${WS_PORT}/tcp
+      - ${RPC_PORT}:8545/tcp
+      - ${WS_PORT}:8546/tcp
+
+  maru:
+    ports:
+      - ${MARU_PORT}:8080
+

@@ -1,6 +1,6 @@
 {
   "config": {
-    "chainId": 59140,
+    "chainId": 59144,
     "homesteadBlock": 0,
     "eip150Block": 0,
     "eip155Block": 0,
@@ -11,19 +11,32 @@
     "istanbulBlock": 0,
     "berlinBlock": 0,
     "londonBlock": 0,
+    "terminalTotalDifficulty": 49575263,
+    "shanghaiTime": 1761213600,
+    "depositContractAddress": "0x94d4a7449B968b839dcbc64A61F195CA300986ae",
+    "withdrawalRequestContractAddress": "0x66355689a9f067eeb9dc9d899E4192676988279C",
+    "consolidationRequestContractAddress": "0xF0e003F0dE2d583Ae28FA8cBF66aa096CdAce3ff",
     "clique": {
-      "period": 1,
-      "epoch": 30000
+      "createemptyblocks": true,
+      "blockperiodseconds": 1,
+      "epochlength": 30000
     }
   },
   "nonce": "0x0",
   "timestamp": "0x6391BFF3",
-  "extraData": "0x00000000000000000000000000000000000000000000000000000000000000004D517Aef039A48b3B6bF921e210b7551C8E371070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-  "gasLimit": "0x1C9C380",
+  "extraData": "0x00000000000000000000000000000000000000000000000000000000000000008F81e2E3F8b46467523463835F965fFE476E1c9E0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+  "gasLimit": "0x3A2C940",
+  "baseFeePerGas": "0x8",
   "difficulty": "0x1",
   "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "coinbase": "0x0000000000000000000000000000000000000000",
   "alloc": {
+    "F06B7BD371e46e96DF807d45ED1298BeeE8894BA": {
+      "balance": "0x8AC7230489E80000"
+    },
+    "508Ca82Df566dCD1B0DE8296e70a96332cD644ec": {
+      "balance": "0x33B2E3C15095D385E180000"
+    },
     "0000000000000000000000000000000000000000": {
       "balance": "0x1"
     },
@@ -791,24 +804,6 @@
     },
     "00000000000000000000000000000000000000ff": {
       "balance": "0x1"
-    },
-    "4D517Aef039A48b3B6bF921e210b7551C8E37107": {
-      "balance": "0x33b2e3c9fd0803ce8000000"
-    },
-    "7B63742aac3cED35B7E2cA62Ff577f8665752035": {
-      "balance": "0x33b2e3c9fd0803ce8000000"
-    },
-    "10f32003FFC48d96E7a7926b6328f8c99259A4c5": {
-      "balance": "0x33b2e3c9fd0803ce8000000"
-    },
-    "191F7Daddae50B1f26F65E3255fb35daBc191C0D": {
-      "balance": "0x33b2e3c9fd0803ce8000000"
-    },
-    "a4d2C60DB2Ed77ee7D94252485C4e13f67700895": {
-      "balance": "0x33b2e3c9fd0803ce8000000"
-    },
-    "A744b8B2b617a04b2FC74489f8A0cF28BDFB0dFC": {
-      "balance": "0x33b2e3c9fd0803ce8000000"
     }
   },
   "number": "0x0",
