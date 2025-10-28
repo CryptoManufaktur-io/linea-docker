@@ -31,6 +31,9 @@ version() {
 # Client versions
 # Adjust for your clients and how to check their version
   case "${__value}" in
+    *maru.yml* )
+      echo "MARU_DOCKER_TAG: $(grep -E '^MARU_DOCKER_TAG=' "${__env_file}" | cut -d '=' -f2)"
+      ;;&
     *linea-besu.yml* )
       __docompose exec linea /opt/besu/bin/besu --profile=advanced-mainnet --version
       ;;&
