@@ -9,7 +9,7 @@ x-logging: &logging
 services:
   maru:
     hostname: linea-maru
-    image: consensys/maru:${MARU_VERSION}
+    image: consensys/maru:${MARU_DOCKER_TAG}
     restart: unless-stopped
     ports:
       - "${MARU_P2P_PORT}:9000/tcp" # P2P main port
