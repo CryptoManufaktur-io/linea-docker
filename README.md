@@ -34,4 +34,4 @@ If you want the Execution RPC ports exposed, use `linea-shared.yml` in `COMPOSE_
 If meant to be used with [central-proxy-docker](https://github.com/CryptoManufaktur-io/central-proxy-docker) for traefik
 and Prometheus remote write; use `:ext-network.yml` in `COMPOSE_FILE` inside `.env` in that case.
 
-This is Linea Docker v1.1.0
+This is Linea Docker v2.0.0
