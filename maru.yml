@@ -50,4 +50,3 @@ services:
 
 volumes:
   linea-mainnet-maru:
-  
