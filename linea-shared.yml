@@ -8,4 +8,3 @@ services:
   maru:
     ports:
       - ${MARU_PORT}:8080
-
