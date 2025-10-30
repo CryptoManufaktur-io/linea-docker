@@ -1,1 +1,8 @@
 .env*
+*.swp
+*.swo
+*.swn
+*.bak
+*.original
+custom.yml
+execution-layer-static-nodes.json

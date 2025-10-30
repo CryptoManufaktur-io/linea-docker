@@ -13,9 +13,27 @@ services:
     entrypoint:
       - sh
       - -c
-      - "chown -R 1000:1000 /opt/besu/data"
+    command:
+      - |-
+        chown -R 1000:1000 /opt/besu/data
+        echo "${EL_STATIC_NODES}" > /var/lib/besu/static-nodes.json
+        if [ ! -f /var/lib/besu/ee-secret/jwtsecret ]; then
+          echo "Generating JWT secret"
+          __secret1=$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
+          __secret2=$(head -c 8 /dev/urandom | od -A n -t u8 | tr -d '[:space:]' | sha256sum | head -c 32)
+          echo -n "$__secret1""$__secret2" > /var/lib/besu/ee-secret/jwtsecret
+        fi
+        if [ -O "/var/lib/besu/ee-secret/jwtsecret" ]; then
+          chmod 666 /var/lib/besu/ee-secret/jwtsecret
+        fi
+        wget -O /var/lib/besu/genesis.json "${BESU_GENESIS_URL}"
+        wget -O /opt/consensys/maru/configs/maru-genesis.json "${MARU_GENESIS_URL}"
     volumes:
       - linea-besu-data:/opt/besu/data
+      - linea-besu-config:/var/lib/besu
+      - maru-config:/opt/consensys/maru/configs
+      - jwtsecret:/var/lib/besu/ee-secret
+      - ./execution-layer-static-nodes.json:/var/lib/besu/static-nodes.json
     <<: *logging
 
   linea:
@@ -35,16 +53,19 @@ services:
       - --Xdns-update-enabled=true
       - --Xrpc-ipc-enabled=true
       - --static-nodes-file=/var/lib/besu/static-nodes.json
+      - --engine-jwt-secret=/var/lib/besu/ee-secret/jwtsecret
+      - --p2p-port=${EL_P2P_PORT}
+      - --p2p-host=${PUBLIC_IP}
     volumes:
       - ./besu/linea-besu.config.toml:/var/lib/besu/linea-besu.config.toml:ro
-      - ./besu/besu-genesis.json:/var/lib/besu/genesis.json:ro
       - ./besu/log4j.xml:/var/lib/besu/log4j.xml
       - ./execution-layer-static-nodes.json:/var/lib/besu/static-nodes.json:ro
-      - ./engine-jwt:/var/lib/besu/jwt:ro
+      - jwtsecret:/var/lib/besu/ee-secret:ro
       - linea-besu-data:/opt/besu/data
+      - linea-besu-config:/var/lib/besu
     ports:
-      - ${EL_P2P_PORT}:30303/tcp
-      - ${EL_P2P_PORT}:30303/udp
+      - ${EL_P2P_PORT}:${EL_P2P_PORT}/tcp
+      - ${EL_P2P_PORT}:${EL_P2P_PORT}/udp
     networks:
       default:
         aliases:
@@ -77,3 +98,6 @@ services:
 
 volumes:
   linea-besu-data:
+  linea-besu-config:
+  jwtsecret:
+  maru-config:
