@@ -4,6 +4,7 @@
 # l1-eth-api = { endpoint = "please provide an L1 RPC endpoint here" }
 # l1-polling-interval = "6 seconds"
 # l1-highest-block-tag = "finalized"
+# l2-eth-api-endpoint = { endpoint = "please_provide_an_L2_RPC_endpoint_here" }
 
 [persistence]
 data-path = "/opt/maru/data"
@@ -23,7 +24,7 @@ reconnect-delay = "500ms"
 
 [payload-validator]
 # Besu and Geth node as execution layer client
-engine-api-endpoint = { endpoint = "http://el-client:8550", jwt-secret-path = "/opt/consensys/maru/configs/jwt" }
+engine-api-endpoint = { endpoint = "http://el-client:8550", jwt-secret-path = "/opt/consensys/maru/configs/ee-secret/jwtsecret" }
 eth-api-endpoint = { endpoint = "http://el-client:8545" }
 payload-validation-enabled = false
 
