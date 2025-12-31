@@ -29,14 +29,15 @@ version() {
   __var="COMPOSE_FILE"
   __get_value_from_env "${__var}" "${__env_file}" "__value"
 # Client versions
-# Adjust for your clients and how to check their version
   case "${__value}" in
     *maru.yml* )
       echo "MARU_DOCKER_TAG: $(grep -E '^MARU_DOCKER_TAG=' "${__env_file}" | cut -d '=' -f2)"
-      ;;&
+      ;;
+  esac
+  case "${__value}" in
     *linea-besu.yml* )
       __docompose exec linea /opt/besu/bin/besu --profile=advanced-mainnet --version
-      ;;&
+      ;;
   esac
 }
 
@@ -51,33 +52,6 @@ __prep_conffiles() {
 
 start() {
   __docompose up -d --remove-orphans "$@"
-# Adjust all of the below, carefully. hellcheck becomes shellcheck
-# If you have an init container, e.g. to grab a SNAPSHOT, delete the above line and run this in screen
-#  if ! type -P screen >/dev/null 2>&1; then
-#    ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y screen
-#  fi
-# If multiples of this stack may run on one host, distinguish by something unique. Otherwise just set a value here with
-# __screen_id=<name-of-project>
-# OR the next three lines
-# __var="NETWORK"
-# __get_value_from_env "${__var}" "${__env_file}" "__screen_id"
-# hellcheck disable=SC2154
-#  rm -f "/tmp/${__screen_id}-compose-screen.log"
-# hellcheck disable=SC2086
-#  screen -dmS "${__screen_id}-compose-session" -L -Logfile "/tmp/${__screen_id}-compose-screen.log" ${__compose_exe} up -d --remove-orphans "$@"
-#  echo "Running \"docker compose up -d\" in screen because of the init container."
-#  echo
-#  echo "If this is your first start and you are getting a SNAPSHOT, you can view the init logs:"
-#  echo "\"${__me} logs -f init\""
-#  echo
-#  echo "You can attach to the screen session with \"screen -r ${__screen_id}-compose-session\""
-#  echo
-#  echo "Waiting 5 seconds"
-#  sleep 5
-#  echo
-#  echo "Here's the output of docker compose so far:"
-#  cat "/tmp/${__screen_id}-compose-screen.log"
-#  echo
 }
 
 
@@ -103,7 +77,7 @@ __env_migrate() {
       if [[ "${__line}" =~ ^([A-Za-z0-9_-]+)= ]]; then
         __varname="${BASH_REMATCH[1]}"
         if [[ "${__varname}" = *-* ]]; then
-          echo "❌ Error: Variable '${__varname}' contains a dash and would not be usable in Bash."
+          echo "Error: Variable '${__varname}' contains a dash and would not be usable in Bash."
           (( ++__error ))
         fi
         if [[ "${__varname}" = "ENV_VERSION" ]]; then
@@ -195,12 +169,12 @@ __get_value_from_env() {
   if [[ "${__output_var}" = "__parsed_value" || "${__output_var}" = "__output_var" \
       || "${__output_var}" = "__output" || "${__output_var}" = "__env_file" \
       || "${__output_var}" = "__var_name" ]]; then
-    echo "__get_value_from_env was called with a conflicting output variable: $__output_var"
+    echo "__get_value_from_env was called with a conflicting output variable: ${__output_var}"
     echo "This is a bug."
     exit 70
   fi
 
-  __output=$(awk -v var="$__var_name" '
+  __output=$(awk -v var="${__var_name}" '
     BEGIN { __found = 0; __value = "" }
 
     # Skip empty lines and comments
@@ -283,15 +257,15 @@ __get_value_from_env() {
       print "EOF"
       print "__found=" __found
     }
-  ' "$__env_file")
+  ' "${__env_file}")
 
   # Parse __value using here-doc style
-  __parsed_value=$(awk '/^__value<<EOF$/ {getline; while ($0 != "EOF") { print; getline } }' <<< "$__output")
+  __parsed_value=$(awk '/^__value<<EOF$/ {getline; while ($0 != "EOF") { print; getline } }' <<< "${__output}")
   # Parse __found directly into a global variable
-  __found=$(awk -F= '/^__found=/ {print $2}' <<< "$__output")
+  __found=$(awk -F= '/^__found=/ {print $2}' <<< "${__output}")
 
   # assign value to caller’s variable
-  printf -v "$__output_var" '%s' "$__parsed_value"
+  printf -v "${__output_var}" '%s' "${__parsed_value}"
 }
 
 
@@ -350,7 +324,9 @@ __update_value_in_env() {
       }
 
       # Skip multiline content until closing quote line
-      multi_line && ( $0 !~ (__q=="\"" ? "\"[ \t]*$" : "'\''[ \t]*$") ) { next }
+      multi_line && ( $0 !~ (__q=="\"" ? "\"[ \t]*$" : "'\''[ \t]*$") ) {
+        next
+      }
 
       # Closing line of the multi-line block: consume it and reset
       multi_line && ( $0 ~ (__q=="\"" ? "\"[ \t]*$" : "'\''[ \t]*$") ) {
