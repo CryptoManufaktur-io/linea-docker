@@ -7,6 +7,16 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
+  tools:
+    restart: "no"
+    build:
+      context: ./tools
+      dockerfile: Dockerfile
+    image: tools:tmp
+    pull_policy: never
+    deploy:
+      replicas: 0
+
   init:
     image: busybox
     user: root

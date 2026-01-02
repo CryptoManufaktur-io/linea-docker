@@ -32,12 +32,15 @@ version() {
   case "${__value}" in
     *maru.yml* )
       echo "MARU_DOCKER_TAG: $(grep -E '^MARU_DOCKER_TAG=' "${__env_file}" | cut -d '=' -f2)"
-      ;;
-  esac
-  case "${__value}" in
+      echo "------------------------------"
+    ;;&
     *linea-besu.yml* )
+      echo "Linea version ........"
       __docompose exec linea /opt/besu/bin/besu --profile=advanced-mainnet --version
-      ;;
+      echo
+      echo "Verify upgrade ........."
+      __docompose run --rm tools curl --location http://linea:8545/ --header 'Content-Type: application/json' --data '{ "jsonrpc": "2.0", "method": "eth_config", "params":[], "id": 1 }' | jq .result
+    ;;&
   esac
 }
 
