@@ -29,7 +29,6 @@ version() {
   __var="COMPOSE_FILE"
   __get_value_from_env "${__var}" "${__env_file}" "__value"
 # Client versions
-# Adjust for your clients and how to check their version
   case "${__value}" in
     *maru.yml* )
       echo "MARU_DOCKER_TAG: $(grep -E '^MARU_DOCKER_TAG=' "${__env_file}" | cut -d '=' -f2)"
@@ -47,40 +46,15 @@ version() {
 
 
 __prep_conffiles() {
-  # Adjust - this is where sample files would be copied to config files that are meant to be bind-mounted
+  if [ ! -f ./execution-layer-static-nodes.json ]; then
+    ${__as_owner} cp ./execution-layer-static-nodes.json.sample ./execution-layer-static-nodes.json
+  fi
   return
 }
 
 
 start() {
   __docompose up -d --remove-orphans "$@"
-# Adjust all of the below, carefully. hellcheck becomes shellcheck
-# If you have an init container, e.g. to grab a SNAPSHOT, delete the above line and run this in screen
-#  if ! type -P screen >/dev/null 2>&1; then
-#    ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y screen
-#  fi
-# If multiples of this stack may run on one host, distinguish by something unique. Otherwise just set a value here with
-# __screen_id=<name-of-project>
-# OR the next three lines
-# __var="NETWORK"
-# __get_value_from_env "${__var}" "${__env_file}" "__screen_id"
-# hellcheck disable=SC2154
-#  rm -f "/tmp/${__screen_id}-compose-screen.log"
-# hellcheck disable=SC2086
-#  screen -dmS "${__screen_id}-compose-session" -L -Logfile "/tmp/${__screen_id}-compose-screen.log" ${__compose_exe} up -d --remove-orphans "$@"
-#  echo "Running \"docker compose up -d\" in screen because of the init container."
-#  echo
-#  echo "If this is your first start and you are getting a SNAPSHOT, you can view the init logs:"
-#  echo "\"${__me} logs -f init\""
-#  echo
-#  echo "You can attach to the screen session with \"screen -r ${__screen_id}-compose-session\""
-#  echo
-#  echo "Waiting 5 seconds"
-#  sleep 5
-#  echo
-#  echo "Here's the output of docker compose so far:"
-#  cat "/tmp/${__screen_id}-compose-screen.log"
-#  echo
 }
 
 
@@ -106,7 +80,7 @@ __env_migrate() {
       if [[ "${__line}" =~ ^([A-Za-z0-9_-]+)= ]]; then
         __varname="${BASH_REMATCH[1]}"
         if [[ "${__varname}" = *-* ]]; then
-          echo "❌ Error: Variable '${__varname}' contains a dash and would not be usable in Bash."
+          echo "Error: Variable '${__varname}' contains a dash and would not be usable in Bash."
           (( ++__error ))
         fi
         if [[ "${__varname}" = "ENV_VERSION" ]]; then
@@ -198,22 +172,22 @@ __get_value_from_env() {
   if [[ "${__output_var}" = "__parsed_value" || "${__output_var}" = "__output_var" \
       || "${__output_var}" = "__output" || "${__output_var}" = "__env_file" \
       || "${__output_var}" = "__var_name" ]]; then
-    echo "__get_value_from_env was called with a conflicting output variable: $__output_var"
+    echo "__get_value_from_env was called with a conflicting output variable: ${__output_var}"
     echo "This is a bug."
     exit 70
   fi
 
-  __output=$(awk -v var="$__var_name" '
+  __output=$(awk -v var="${__var_name}" '
     BEGIN { __found = 0; __value = "" }
 
     # Skip empty lines and comments
-    /^#|^\s*$/ {
+    /^[[:space:]]*($|#)/ {
       next
     }
 
     # Match single-line unquoted value
-    $0 ~ "^[ \t]*"var"=[^\"].*$" {
-      gsub("^[ \t]*"var"=", "")
+    $0 ~ "^[ \t]*" var "=" && $0 !~ "^[ \t]*" var "=[ \t]*[\"'\'']" {
+      sub("^[ \t]*"var"=", "")
       gsub(/^[ \t]*|[ \t]*$/, "", $0)
       __value = $0
       __found = 1
@@ -227,33 +201,53 @@ __get_value_from_env() {
        exit
     }
 
-    # Match a quoted single-line value
-    $0 ~ "^[ \t]*"var"=\"[^\"]*\"[ \t]*$" {
-      gsub("^[ \t]*"var"=\"", "")
-      gsub(/"[ \t]*$/, "", $0)
+    # Single-line DOUBLE-quoted: VAR="..."; allow trailing spaces
+    $0 ~ "^[ \t]*" var "=\"[^\"]*\"[ \t]*$" {
+      sub("^[ \t]*" var "=\"", "", $0)
+      sub(/"[ \t]*$/, "", $0)
       __value = "\"" $0 "\""
       __found = 1
       exit
     }
 
-    # Match the start of a multi-line value (with opening quote)
-    $0 ~ "^[ \t]*"var"=\"[^\"]*$" {
-      gsub("^[ \t]*"var"=\"", "")
-      __value = "\"" $0 "\n"
+    # Single-line SINGLE-quoted: VAR='\''...'\''; allow trailing spaces
+    $0 ~ "^[ \t]*" var "='\''[^'\'']*'\''[ \t]*$" {
+      sub("^[ \t]*" var "='\''", "", $0)
+      sub(/'\''[ \t]*$/, "", $0)
+      __value = "'"'"'" $0 "'"'"'"
+      __found = 1
+      exit
+    }
+
+    # Match the start of a multi-line value (with opening double or single quote)
+    $0 ~ "^[ \t]*"var"=\"[^\"]*$" || $0 ~ "^[ \t]*" var "='\''[^'\'']*$" {
+      # Pick which quote we matched and strip the var=<quote> prefix
+      if ($0 ~ "^[ \t]*" var "=\"[^\"]*$") {
+        __q="\""; sub("^[ \t]*" var "=\"", "", $0)
+      } else {
+        __q="'\''";  sub("^[ \t]*" var "='\''", "", $0)
+      }
+      # Accumulator starts with the opening quote, plus first chunk + newline
+      __value = __q $0 "\n"
       __found = 1
       next
     }
 
     # Continue collecting lines for a multi-line value
-    __found && !/"[ \t]*$/ {
+    __found && ($0 !~ (__q=="\"" ? "\"[ \t]*$" : "'\''[ \t]*$")) {
       __value = __value $0 "\n"
       next
     }
 
     # End of a multi-line value (with closing quote)
-    __found && /"[ \t]*$/ {
-      gsub(/[ \t]*"[ \t]*$/, "")
-      __value = __value $0 "\""
+    __found && ($0 ~ (__q=="\"" ? "\"[ \t]*$" : "'\''[ \t]*$")) {
+      # Remove the trailing quote + any spaces/tabs around it
+      if (__q == "\"") {
+        sub(/[ \t]*"[ \t]*$/, "", $0)
+      } else {
+        sub(/[ \t]*'\''[ \t]*$/, "", $0)
+      }
+      __value = __value $0 __q
       __found = 1
       exit
     }
@@ -266,15 +260,15 @@ __get_value_from_env() {
       print "EOF"
       print "__found=" __found
     }
-  ' "$__env_file")
+  ' "${__env_file}")
 
   # Parse __value using here-doc style
-  __parsed_value=$(awk '/^__value<<EOF$/ {getline; while ($0 != "EOF") { print; getline } }' <<< "$__output")
+  __parsed_value=$(awk '/^__value<<EOF$/ {getline; while ($0 != "EOF") { print; getline } }' <<< "${__output}")
   # Parse __found directly into a global variable
-  __found=$(awk -F= '/^__found=/ {print $2}' <<< "$__output")
+  __found=$(awk -F= '/^__found=/ {print $2}' <<< "${__output}")
 
   # assign value to caller’s variable
-  printf -v "$__output_var" '%s' "$__parsed_value"
+  printf -v "${__output_var}" '%s' "${__parsed_value}"
 }
 
 
@@ -292,41 +286,56 @@ __update_value_in_env() {
   if grep -q "^[ \t]*${__var_name}=" "${__env_file}"; then
     # Variable exists, update it
     awk -v var="${__var_name}" -v new_value="${__escaped_value}" '
-      BEGIN { in_block = 0; multi_line = 0 }
-
-      # Match the line that starts with the variable name
+      BEGIN { in_block = 0; multi_line = 0; __q="" }
+      # Start of the target variable
       $0 ~ "^[ \t]*" var "=" {
-        # If the value starts with a quote, it may be a multi-line
+        # Determine opening quote (if any)
         if ($0 ~ "^[ \t]*" var "=\"") {
-          # Start of multi-line value
-          multi_line = 1
-          # Print the variable name with the new value, replacing & safely
-          gsub(/&/, "\\&", new_value)
-          print var "=" new_value
-        } else {
-          # Single-line value
-          gsub(/&/, "\\&", new_value)
-          print var "=" new_value
+          __q = "\""
+          # If there is NOT a second " later on the line, it is multiline
+          if ($0 !~ "^[ \t]*" var "=\".*\"[ \t]*$")
+            multi_line = 1
+          else
+            multi_line = 0
         }
-        # Set the flag to indicate we are processing the target variable block
+        else if ($0 ~ "^[ \t]*" var "='\''") {
+          __q = "'\''"
+          # If there is NOT a second '\'' later on the line, it is multiline
+          if ($0 !~ "^[ \t]*" var "='\''.*'\''[ \t]*$")
+            multi_line = 1
+          else
+            multi_line = 0
+        }
+        else {
+          __q = ""
+          multi_line = 0
+        }
+
+        # Replace with new value, verbatim (already escaped upstream)
+        gsub(/&/, "\\&", new_value)   # AWK print safety
+        print var "=" new_value
+
         in_block = 1
         next
       }
 
-      # If we encounter a new variable definition, stop skipping lines
-      /^[A-Z_][A-Z0-9_]*=/ && in_block {
-        in_block = 0
-        multi_line = 0
+      # A new variable definition resets skipping
+      /^[ \t]*[A-Z_][A-Z0-9_]*=/ && in_block {
+        in_block=0
+        multi_line=0
+        __q=""
       }
-      # Continue to skip lines in a multi-line block if multi_line is true
-      multi_line && !/"[ \t]*$/ {
+
+      # Skip multiline content until closing quote line
+      multi_line && ( $0 !~ (__q=="\"" ? "\"[ \t]*$" : "'\''[ \t]*$") ) {
         next
       }
 
-      # If we reach the end of a multi-line value, reset flags
-      multi_line && /"[ \t]*$/ {
-        in_block = 0
-        multi_line = 0
+      # Closing line of the multi-line block: consume it and reset
+      multi_line && ( $0 ~ (__q=="\"" ? "\"[ \t]*$" : "'\''[ \t]*$") ) {
+        in_block=0
+        multi_line=0
+        __q=""
         next
       }
 
