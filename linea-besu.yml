@@ -79,8 +79,8 @@ services:
           - el-client
     labels:
       - metrics.scrape=true
-      - metrics.port=6060
-      - metrics.path=/debug/metrics/prometheus
+      - metrics.port=9545
+      - metrics.path=/metrics
       - metrics.network=linea-${NETWORK}
       - traefik.enable=true
       - traefik.http.routers.${RPC_HOST:-linea}.service=${RPC_HOST:-linea}
