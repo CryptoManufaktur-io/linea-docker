@@ -65,7 +65,7 @@ services:
     labels:
       - metrics.scrape=true
       - metrics.port=9090
-      - metrics.path=/prometheus
+      - metrics.path=/metrics
       - metrics.network=linea-${NETWORK}
       - traefik.enable=true
       - traefik.http.routers.${MARU_HOST:-maru}.service=${MARU_HOST:-maru}
