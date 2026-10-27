@@ -63,6 +63,8 @@ services:
       - --engine-jwt-secret=/var/lib/besu/ee-secret/jwtsecret
       - --p2p-port=${EL_P2P_PORT}
       - --p2p-host=${PUBLIC_IP}
+      - --rpc-http-api=${RPC_HTTP_API:-NET,ETH,WEB3,TRACE}
+      - --rpc-ws-api=${RPC_WS_API:-NET,ETH,WEB3,TRACE}
     volumes:
       - ./besu/linea-besu.config.toml:/var/lib/besu/linea-besu.config.toml:ro
       - ./besu/log4j.xml:/var/lib/besu/log4j.xml
