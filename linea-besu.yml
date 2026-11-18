@@ -53,6 +53,8 @@ services:
         condition: service_completed_successfully
     environment:
       - JAVA_OPTS=${BESU_HEAP:--Xmx5g}
+      # Java4Shell (CVE-2026-114938) mitigation; remove once the image ships a fixed JDK
+      - JAVA_TOOL_OPTIONS=-XX:-UseBASE64Intrinsics
       - LOG4J_CONFIGURATION_FILE=/var/lib/besu/log4j.xml
     command:
       - --config-file=/var/lib/besu/linea-besu.config.toml
