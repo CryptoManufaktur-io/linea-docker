@@ -43,6 +43,8 @@ services:
       - "${MARU_P2P_PORT}:${MARU_P2P_PORT}/udp"  # P2P discovery port (UDP only)
     environment:
       - JAVA_OPTS=-Xmx2g
+      # Java4Shell (CVE-2026-114938) mitigation; remove once the image ships a fixed JDK
+      - JAVA_TOOL_OPTIONS=-XX:-UseBASE64Intrinsics
     volumes:
       - ./maru/log4j.xml:/opt/consensys/maru/configs/log4j.xml:ro
       - jwtsecret:/opt/consensys/maru/configs/ee-secret:ro
